@@ -1,80 +1,47 @@
 const AUTH_URL = 'https://01.gritlab.ax/api/auth/signin';
 const GRAPHQL_URL = 'https://01.gritlab.ax/api/graphql-engine/v1/graphql'
 
+const personalInfo = document.getElementById('personalInfo');
+const xpAmount = document.getElementById('xpAmount');
+const audits = document.getElementById('audits');
+
+var userData = {};
+var auditData = {};
+
 document.addEventListener('DOMContentLoaded', initialize)
 
 async function initialize() {
     if (isLogged) {
         hideModal('loginContainer');
         showModal('mainContainer');
-        const data = await fetchGraphQLData();
-        updateDashboard(data)
-    } 
-}
-
-function isLogged() {
-    const token = sessionStorage.getItemItem('jwtToken');
-    if (typeof token === null) return false;
-    return true;
+        await fetchGraphQLData();
+        drawAuditRatioGraph(auditData);
+        updateDashboard();
+    }
 }
 
 async function fetchGraphQLData() {
-    const result = await fetchQuery(generalDataQuery);
-    return result
+    const generalData = await fetchQuery(generalDataQuery);
+    const data = generalData.user[0];
+    userData.auditRatio = data.auditRatio.toFixed(2) || '';
+    userData.auditsMade = formatXP(data.totalUp) || '';
+    userData.auditsReceived = formatXP(data.totalDown) || '';
+    userData.login = data.login || ''
+    userData.id = data.id || '';
+    userData.firstName = data.firstName || '';
+    userData.lastName = data.lastName || '';
+
+    const xpData = await fetchQuery(xpQuery);
+
+    xpTransactions = xpData.transaction || [];
+    const totalXP = xpTransactions.reduce((sum, xp) => {
+        return sum + xp.amount;
+    }, 0)
+
+    userData.totalXP = formatXP(totalXP) || '';
+
+    auditData = await fetchQuery(auditQuery);
 }
-
-async function handleLogin() {
-    const identifier = document.getElementById('identifier').value;
-    const password = document.getElementById('password').value;
-    const errorMessage = document.getElementById('errorMessage');
-
-    if (!identifier || !password) {
-        errorMessage.textContent = 'Please enter both identifier and password';
-        errorMessage.style.display = 'block';
-        return;
-    }
-
-    const credentials = btoa(`${identifier}:${password}`);
-    try {
-        const response = await fetch(AUTH_URL, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${credentials}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.log(errorData)
-            errorMessage.textContent = errorData.error || 'Login failed';
-            errorMessage.style.display = 'block';
-            return;
-        }
-
-        const token = await response.json();
-        sessionStorage.setItem('jwtToken', token);
-
-        hideModal('loginContainer');
-        showModal('mainContainer');
-        const data = fetchGraphQLData();
-        console.log(data)
-        updateDashboard(data)
-
-    } catch (error) {
-        errorMessage.textContent = 'An error occurred. Please try again.';
-        errorMessage.style.display = 'block';
-    }
-}
-
-function hideModal(containerId) {
-    document.getElementById(containerId).classList.add('hidden')
-}
-
-function showModal(containerId) {
-    document.getElementById(containerId).classList.remove('hidden')
-}
-
 
 
 async function fetchQuery(query) {
@@ -110,30 +77,26 @@ async function fetchQuery(query) {
     }
 }
 
-function updateDashboard(data) {
-    const personalInfo = document.getElementById('personalInfo');
-    const xpAmount = document.getElementById('xpAmount');
-    const audits = document.getElementById('audits');
-    const auditRatio = data.user[0].auditRatio;
+
+function updateDashboard() {
 
     personalInfo.innerHTML = `
-        <h2>Personal Information</h2>
-        <p>Login: ${data.user[0].login}</p>
-        <p>ID: ${data.user[0].id}</p>
-        <p>Name: ${data.user[0].firstName}</p>
-        <p>Surname: ${data.user[0].lastName}</p>
-        <p>Audit ratio: ${auditRatio}</p>
+        <h2>User info</h2>
+        <p>Login: <b style="color:red;">${userData.login}</b></p>
+        <p>ID: <b>${userData.id}</b></p>
+        <p>Name: <b>${userData.firstName}</b></p>
+        <p>Surname: <b>${userData.lastName}</b></p>
     `;
 
     xpAmount.innerHTML = `
         <h2>XP Amount</h2>
-        <p>Total Up: ${data.user[0].totalUp}</p>
-        <p>Total Down: ${data.user[0].totalDown}</p>
+        <p class="xp">${userData.totalXP}</p>
     `;
 
     audits.innerHTML = `
         <h2>Audits</h2>
-        <p>Total Up: ${data.user[0].totalUp}</p>
-        <p>Total Down: ${data.user[0].totalDown}</p>
+        <p>Audits made: <b>${userData.auditsMade}</b> XP</p>
+        <p>Audits received: <b>${userData.auditsReceived}</b> XP</p>
+        <p>Audit ratio: <b>${userData.auditRatio}</b></p>
     `;
 }
