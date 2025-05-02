@@ -1,5 +1,4 @@
 function drawAuditRatioGraph(data) {
-
     // SVG setup
     const svg = document.getElementById('graph1');
     svg.innerHTML = ''; // Clear existing content
@@ -157,8 +156,6 @@ function drawAuditRatioGraph(data) {
     path.setAttribute('fill', 'none');
     g.appendChild(path);
 
-
-
     dataPoints.forEach((d, i) => {
         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         circle.setAttribute('cx', xScale(d.date));
@@ -168,15 +165,15 @@ function drawAuditRatioGraph(data) {
         circle.addEventListener('mouseover', throttle(() => {
             const svgWidth = document.getElementById('graph1').getBoundingClientRect().width;
             // Set tooltip text content (last part of path)
-            tooltipText.textContent = d.path.split('/').pop();
+            tooltipText.textContent = d.path.split('/').pop() + ' ' + d.ratio.toFixed(1);
 
             // Position tooltip
             const bbox = tooltipText.getBBox();
             var x = xScale(d.date) + bbox.width + 60 < svgWidth ? xScale(d.date) : xScale(d.date) + 10 - bbox.width;
 
-            const y = yScale(d.ratio) - 10;
+            const y = yScale(d.ratio) - 12;
             tooltipText.setAttribute('x', x + 5); // Padding
-            tooltipText.setAttribute('y', y ); // Align text vertically
+            tooltipText.setAttribute('y', y); // Align text vertically
 
             // Update background size based on text
             tooltipBg.setAttribute('x', x);
@@ -213,5 +210,46 @@ function drawAuditRatioGraph(data) {
 
 }
 
-// Example usage:
-// drawAuditRatioGraph(graphQLData);
+function drawAuditorsGraph(data) {
+    // SVG setup
+    const svg = document.getElementById('graph2');
+    svg.innerHTML = ''; // Clear existing content
+
+    // Define original dimensions for viewBox
+    const originalWidth = 600;
+    const originalHeight = 400;
+    svg.setAttribute('viewBox', `0 0 ${originalWidth} ${originalHeight}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet'); // Maintain aspect ratio
+
+    // Get actual dimensions of SVG
+    const { width: actualWidth } = svg.getBoundingClientRect();
+    const scaleFactor = actualWidth / originalWidth; // Scale based on actual width
+    const width = originalWidth;
+    const height = originalHeight;
+
+    // Adjust margins based on scale
+    const margin = {
+        top: 20 * scaleFactor,
+        right: 30 * scaleFactor,
+        bottom: 50 * scaleFactor,
+        left: 50 * scaleFactor
+    };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    // Add SVG background
+    const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bgRect.setAttribute('width', '100%');
+    bgRect.setAttribute('height', '100%');
+    bgRect.setAttribute('fill', '#f5f5ff'); // Light gray background (modify as needed)
+    svg.appendChild(bgRect);
+
+    // Group for graph content
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+    svg.appendChild(g);
+
+    // Process data: Calculate cumulative audit ratio for each transaction
+    var transactions = data.transaction;
+
+}

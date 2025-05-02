@@ -7,6 +7,7 @@ const audits = document.getElementById('audits');
 
 var userData = {};
 var auditData = {};
+var auditorData = {};
 
 document.addEventListener('DOMContentLoaded', initialize)
 
@@ -39,8 +40,33 @@ async function fetchGraphQLData() {
     }, 0)
 
     userData.totalXP = formatXP(totalXP) || '';
-
     auditData = await fetchQuery(auditQuery);
+    auditorData = await fetchQuery(auditorData);
+
+    const auditCounts = {};
+    console.log(auditorData)
+    auditorData.result.forEach(result => {
+        result.audits.forEach(audit => {
+            const auditor = audit.auditor;
+            if (!auditor) return;
+
+            const key = auditor.login;
+
+            if (!auditCounts[key]) {
+                auditCounts[key] = {
+                    login: auditor.login,
+                    firstName: auditor.firstName,
+                    lastName: auditor.lastName,
+                    count: 0
+                };
+            }
+            auditCounts[key].count += 1;
+        });
+    });
+
+    const sortedAuditorList = Object.values(auditCounts).sort((a, b) => b.count - a.count);
+    console.log(sortedAuditorList);
+
 }
 
 

@@ -52,3 +52,22 @@ query {
     type
   }
 }`
+
+
+const auditorsQuery = `
+query {
+  result (
+    where: 
+    {type: {_eq: "user_audit"}}
+  )
+  {
+    audits {
+      auditor {
+        login
+        firstName
+        lastName
+      }
+    }
+  }
+}`
+  
