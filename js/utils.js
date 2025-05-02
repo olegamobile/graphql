@@ -1,5 +1,6 @@
 function isLogged() {
     const token = sessionStorage.getItemItem('jwtToken');
+    console
     if (typeof token === null) return false;
     return true;
 }

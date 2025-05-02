@@ -12,7 +12,7 @@ var auditorData = {};
 document.addEventListener('DOMContentLoaded', initialize)
 
 async function initialize() {
-    if (isLogged) {
+    if (isLogged === true) {
         hideModal('loginContainer');
         showModal('mainContainer');
         await fetchGraphQLData();
