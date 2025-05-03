@@ -12,7 +12,7 @@ var auditorData = {};
 document.addEventListener('DOMContentLoaded', initialize)
 
 async function initialize() {
-    if (isLogged === true) {
+    if (isLogged()) {
         hideModal('loginContainer');
         showModal('mainContainer');
         await fetchGraphQLData();
@@ -41,7 +41,7 @@ async function fetchGraphQLData() {
 
     userData.totalXP = formatXP(totalXP) || '';
     auditData = await fetchQuery(auditQuery);
-    auditorData = await fetchQuery(auditorData);
+    auditorData = await fetchQuery(auditorsQuery);
 
     const auditCounts = {};
     console.log(auditorData)

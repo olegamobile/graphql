@@ -56,12 +56,11 @@ query {
 
 const auditorsQuery = `
 query {
-  result (
-    where: 
-    {type: {_eq: "user_audit"}}
-  )
-  {
-    audits {
+  result(
+    where: { type: { _eq: "user_audit" } }
+  ) {
+    audits(where: { auditedAt: { _is_null: false } }) {
+      auditedAt
       auditor {
         login
         firstName
