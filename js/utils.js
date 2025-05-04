@@ -19,7 +19,6 @@ function handleLogout() {
     document.title = 'Grit:lab user profile page';
 }
 
-
 async function handleLogin() {
     const identifier = document.getElementById('identifier').value;
     const password = document.getElementById('password').value;
@@ -89,7 +88,6 @@ function formatXP(xp) {
     }
 }
 
-// Throttle function
 function throttle(func, limit) {
     let inThrottle;
     return function (...args) {
@@ -99,4 +97,28 @@ function throttle(func, limit) {
             setTimeout(() => inThrottle = false, limit);
         }
     };
+}
+
+
+function updateDashboard() {
+
+    personalInfo.innerHTML = `
+        <h2>User info</h2>
+        <p>Login: <b style="color:red;">${userData.login}</b></p>
+        <p>ID: <b>${userData.id}</b></p>
+        <p>Name: <b>${userData.firstName}</b></p>
+        <p>Surname: <b>${userData.lastName}</b></p>
+    `;
+
+    xpAmount.innerHTML = `
+        <h2>XP Amount</h2>
+        <p class="xp">${userData.totalXP}</p>
+    `;
+
+    audits.innerHTML = `
+        <h2>Audits</h2>
+        <p>Audits made: <b>${userData.auditsMade}</b> XP</p>
+        <p>Audits received: <b>${userData.auditsReceived}</b> XP</p>
+        <p>Audit ratio: <b>${userData.auditRatio}</b></p>
+    `;
 }

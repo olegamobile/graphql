@@ -1,10 +1,12 @@
+const svgNS = 'http://www.w3.org/2000/svg';
+
 function drawAuditRatioGraph(data) {
     // SVG setup
     const svg = graph1;
     svg.innerHTML = ''; // Clear existing content
 
     // Define original dimensions for viewBox
-    const originalWidth = 800;
+    const originalWidth = 1000;
     const originalHeight = 400;
     svg.setAttribute('viewBox', `0 0 ${originalWidth} ${originalHeight}`);
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet'); // Maintain aspect ratio
@@ -17,7 +19,7 @@ function drawAuditRatioGraph(data) {
 
     // Adjust margins based on scale
     const margin = {
-        top: 30 * scaleFactor,
+        top: 50 * scaleFactor,
         right: 30 * scaleFactor,
         bottom: 50 * scaleFactor,
         left: 50 * scaleFactor + 20
@@ -26,14 +28,14 @@ function drawAuditRatioGraph(data) {
     const innerHeight = height - margin.top - margin.bottom;
 
     // Add SVG background
-    const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const bgRect = document.createElementNS(svgNS, 'rect');
     bgRect.setAttribute('width', '100%');
     bgRect.setAttribute('height', '100%');
     bgRect.setAttribute('fill', '#f5f5ff'); // Light gray background (modify as needed)
     svg.appendChild(bgRect);
 
     // Group for graph content
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const g = document.createElementNS(svgNS, 'g');
     g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
     svg.appendChild(g);
 
@@ -41,7 +43,7 @@ function drawAuditRatioGraph(data) {
     var transactions = data.transaction;
 
     transactions = transactions.reduce((acc, curr) => {
-        const existing = acc.find(item => item.path === curr.path && item.type === curr.type);
+        const existing = acc.find(item => item.path === curr.path && item.type === curr.type && item.type === 'down');
 
         if (existing) {
             existing.amount += curr.amount;
@@ -60,7 +62,7 @@ function drawAuditRatioGraph(data) {
     const dataPoints = transactions.map(t => {
         if (t.type === 'up') totalUp += t.amount;
         else totalDown += t.amount;
-        const ratio = totalDown !== 0 ? (totalUp / totalDown).toFixed(1) : 0;
+        const ratio = totalDown !== 0 ? (totalUp / totalDown).toFixed(2) : 0;
         return {
             date: new Date(t.createdAt),
             ratio: parseFloat(ratio),
@@ -73,9 +75,9 @@ function drawAuditRatioGraph(data) {
     const dates = dataPoints.map(d => d.date);
     const minDate = new Date(Math.min(...dates));
     const maxDate = new Date(Math.max(...dates));
-    maxDate.setMonth(maxDate.getMonth() + 1);
-    maxDate.setDate(5);
-    maxDate.setHours(0, 0, 0, 0);
+    // maxDate.setMonth(maxDate.getMonth() + 1);
+    // maxDate.setDate(5);
+    // maxDate.setHours(0, 0, 0, 0);
     const maxRatio = Math.max(...dataPoints.map(d => d.ratio), 1); // Ensure min height
 
     // X-scale: Linear time scale
@@ -97,10 +99,10 @@ function drawAuditRatioGraph(data) {
     }
 
     // Draw X-axis (months)
-    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const xAxis = document.createElementNS(svgNS, 'g');
     xAxis.setAttribute('transform', `translate(0,${innerHeight})`);
     monthTicks.forEach(month => {
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const text = document.createElementNS(svgNS, 'text');
         text.setAttribute('x', xScale(month) + 10);
         text.setAttribute('y', 20);
         text.setAttribute('text-anchor', 'middle');
@@ -108,7 +110,7 @@ function drawAuditRatioGraph(data) {
         xAxis.appendChild(text);
 
         // Grid line
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        const line = document.createElementNS(svgNS, 'line');
         line.setAttribute('x1', xScale(month));
         line.setAttribute('x2', xScale(month));
         line.setAttribute('y1', 0);
@@ -120,10 +122,10 @@ function drawAuditRatioGraph(data) {
     g.appendChild(xAxis);
 
     // Draw Y-axis (ratios)
-    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const yAxis = document.createElementNS(svgNS, 'g');
 
     for (let i = 0; i <= Math.ceil(maxRatio); i += 0.5) {
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const text = document.createElementNS(svgNS, 'text');
         text.setAttribute('x', -10);
         text.setAttribute('y', yScale(i));
         text.setAttribute('text-anchor', 'end');
@@ -131,7 +133,7 @@ function drawAuditRatioGraph(data) {
         yAxis.appendChild(text);
 
         // Grid line
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        const line = document.createElementNS(svgNS, 'line');
         line.setAttribute('x1', 0);
         line.setAttribute('x2', innerWidth);
         line.setAttribute('y1', yScale(i));
@@ -148,7 +150,7 @@ function drawAuditRatioGraph(data) {
     g.appendChild(yAxis);
 
     // Draw line
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const path = document.createElementNS(svgNS, 'path');
     const points = dataPoints.map((d, i) => `${xScale(d.date)},${yScale(d.ratio)}`).join(' ');
     path.setAttribute('d', `M ${points}`);
     path.setAttribute('stroke', 'blue');
@@ -157,7 +159,7 @@ function drawAuditRatioGraph(data) {
     g.appendChild(path);
 
     dataPoints.forEach((d, i) => {
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        const circle = document.createElementNS(svgNS, 'circle');
         circle.setAttribute('cx', xScale(d.date));
         circle.setAttribute('cy', yScale(d.ratio));
         circle.setAttribute('r', 5);
@@ -191,19 +193,19 @@ function drawAuditRatioGraph(data) {
     });
 
     // Draw points with tooltip
-    const tooltipGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const tooltipGroup = document.createElementNS(svgNS, 'g');
     tooltipGroup.setAttribute('id', 'tooltip');
     tooltipGroup.setAttribute('visibility', 'hidden');
     g.appendChild(tooltipGroup);
 
     // Tooltip background (rect)
-    const tooltipBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const tooltipBg = document.createElementNS(svgNS, 'rect');
     tooltipBg.setAttribute('fill', 'rgba(0, 0, 0, 0.7)'); // Semi-transparent black
     tooltipBg.setAttribute('rx', '5'); // Rounded corners
     tooltipGroup.appendChild(tooltipBg);
 
     // Tooltip text
-    const tooltipText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    const tooltipText = document.createElementNS(svgNS, 'text');
     tooltipText.setAttribute('fill', 'white'); // White text for contrast
     tooltipText.setAttribute('font-size', '12');
     tooltipGroup.appendChild(tooltipText);
@@ -217,7 +219,7 @@ function drawAuditorsGraph(auditors) {
     svg.innerHTML = ''; // Clear existing content
 
     // Define original dimensions for viewBox
-    const originalWidth = 800;
+    const originalWidth = 1000;
     const originalHeight = auditors.length * 40;
     svg.setAttribute('viewBox', `0 0 ${originalWidth} ${originalHeight}`);
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
@@ -239,20 +241,20 @@ function drawAuditorsGraph(auditors) {
     const innerHeight = height - margin.top - margin.bottom;
 
     // Add SVG background
-    const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const bgRect = document.createElementNS(svgNS, 'rect');
     bgRect.setAttribute('width', '100%');
     bgRect.setAttribute('height', '100%');
     bgRect.setAttribute('fill', '#f5f5ff');
     svg.appendChild(bgRect);
 
     // Group for chart content
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const g = document.createElementNS(svgNS, 'g');
     g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
     svg.appendChild(g);
 
     // Check if auditors is empty
     if (!auditors.length) {
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const text = document.createElementNS(svgNS, 'text');
         text.setAttribute('x', innerWidth / 2);
         text.setAttribute('y', innerHeight / 2);
         text.setAttribute('text-anchor', 'middle');
@@ -268,15 +270,15 @@ function drawAuditorsGraph(auditors) {
     const yScale = (index) => (index * innerHeight) / auditors.length;
 
     // Draw Y-axis (empty, as names are on bars)
-    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const yAxis = document.createElementNS(svgNS, 'g');
     g.appendChild(yAxis);
 
     // Draw X-axis (counts) with vertical grid lines
-    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const xAxis = document.createElementNS(svgNS, 'g');
     xAxis.setAttribute('transform', `translate(0,${innerHeight})`);
     for (let i = 0; i <= maxCount; i += 1) { // Step of 1
         // X-axis label
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const text = document.createElementNS(svgNS, 'text');
         text.setAttribute('x', xScale(i));
         text.setAttribute('y', 20 * scaleFactor);
         text.setAttribute('text-anchor', 'middle');
@@ -285,7 +287,7 @@ function drawAuditorsGraph(auditors) {
         xAxis.appendChild(text);
 
         // Vertical grid line
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        const line = document.createElementNS(svgNS, 'line');
         line.setAttribute('x1', xScale(i));
         line.setAttribute('x2', xScale(i));
         line.setAttribute('y1', 0);
@@ -300,7 +302,7 @@ function drawAuditorsGraph(auditors) {
     const barHeight = (innerHeight / auditors.length) * 0.8; // 80% of available space
     auditors.forEach((auditor, i) => {
         // Draw bar
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const rect = document.createElementNS(svgNS, 'rect');
         rect.setAttribute('x', 0);
         rect.setAttribute('y', yScale(i) + (innerHeight / auditors.length - barHeight) / 2);
         rect.setAttribute('width', xScale(auditor.count));
@@ -309,7 +311,7 @@ function drawAuditorsGraph(auditors) {
         g.appendChild(rect);
 
         // Add auditor name label
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const text = document.createElementNS(svgNS, 'text');
         text.setAttribute('x', 10 * scaleFactor); // Small offset from bar start
         text.setAttribute('y', yScale(i) + (innerHeight / auditors.length) / 2 + 4);
         text.setAttribute('text-anchor', 'start');
@@ -318,7 +320,7 @@ function drawAuditorsGraph(auditors) {
         let label = `${auditor.firstName} ${auditor.lastName}`.trim();
 
         // Add audits count label
-        const audits = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const audits = document.createElementNS(svgNS, 'text');
         audits.setAttribute('x', 10 * scaleFactor + xScale(auditor.count)); 
         audits.setAttribute('y', yScale(i) + (innerHeight / auditors.length) / 2 + 4);
         audits.setAttribute('text-anchor', 'start');
