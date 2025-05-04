@@ -159,15 +159,15 @@ function drawAuditRatioGraph(data) {
     g.appendChild(path);
 
     dataPoints.forEach((d, i) => {
-        const circle = document.createElementNS(svgNS, 'circle');
-        circle.setAttribute('cx', xScale(d.date));
-        circle.setAttribute('cy', yScale(d.ratio));
-        circle.setAttribute('r', 5);
-        circle.setAttribute('fill', d.type === 'up' ? 'green' : 'darkred');
-        circle.addEventListener('mouseover', throttle(() => {
+        const triangle = document.createElementNS(svgNS, 'polygon');
+        triangle.setAttribute('points', d.type === 'up' ? '0,10 5,0 10,10' : '0,0 5,10 10,0');
+        const offset = d.type === 'up' ? 8 : 0;
+        triangle.setAttribute('transform', `translate(${xScale(d.date)-5}, ${yScale(d.ratio)-offset})`)
+        triangle.setAttribute('fill', d.type === 'up' ? 'green' : 'darkred');
+
+        triangle.addEventListener('mouseover', throttle(() => {
             const svgWidth = document.getElementById('graph1').getBoundingClientRect().width;
-            // Set tooltip text content (last part of path)
-            tooltipText.textContent = d.path.split('/').pop() + ' ' + d.ratio.toFixed(1);
+            tooltipText.textContent = d.path.split('/').pop() + ' ' + d.ratio.toFixed(1) + (d.type === 'up' ? ' ↑' : ' ↓');
 
             // Position tooltip
             const bbox = tooltipText.getBBox();
@@ -186,10 +186,10 @@ function drawAuditRatioGraph(data) {
             tooltipGroup.setAttribute('visibility', 'visible');
         }, 100));
 
-        circle.addEventListener('mouseout', () => {
+        triangle.addEventListener('mouseout', () => {
             tooltipGroup.setAttribute('visibility', 'hidden');
         });
-        g.appendChild(circle);
+        g.appendChild(triangle);
     });
 
     // Draw points with tooltip
@@ -321,7 +321,7 @@ function drawAuditorsGraph(auditors) {
 
         // Add audits count label
         const audits = document.createElementNS(svgNS, 'text');
-        audits.setAttribute('x', 10 * scaleFactor + xScale(auditor.count)); 
+        audits.setAttribute('x', 10 * scaleFactor + xScale(auditor.count));
         audits.setAttribute('y', yScale(i) + (innerHeight / auditors.length) / 2 + 4);
         audits.setAttribute('text-anchor', 'start');
         audits.setAttribute('font-size', 11);
