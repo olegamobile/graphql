@@ -1,10 +1,10 @@
 function drawAuditRatioGraph(data) {
     // SVG setup
-    const svg = document.getElementById('graph1');
+    const svg = graph1;
     svg.innerHTML = ''; // Clear existing content
 
     // Define original dimensions for viewBox
-    const originalWidth = 600;
+    const originalWidth = 800;
     const originalHeight = 400;
     svg.setAttribute('viewBox', `0 0 ${originalWidth} ${originalHeight}`);
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet'); // Maintain aspect ratio
@@ -17,10 +17,10 @@ function drawAuditRatioGraph(data) {
 
     // Adjust margins based on scale
     const margin = {
-        top: 20 * scaleFactor,
+        top: 30 * scaleFactor,
         right: 30 * scaleFactor,
         bottom: 50 * scaleFactor,
-        left: 50 * scaleFactor
+        left: 50 * scaleFactor + 20
     };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
@@ -207,23 +207,24 @@ function drawAuditRatioGraph(data) {
     tooltipText.setAttribute('fill', 'white'); // White text for contrast
     tooltipText.setAttribute('font-size', '12');
     tooltipGroup.appendChild(tooltipText);
-
 }
 
-function drawAuditorsGraph(data) {
+// =============================================================================================
+
+function drawAuditorsGraph(auditors) {
     // SVG setup
-    const svg = document.getElementById('graph2');
+    const svg = graph2;
     svg.innerHTML = ''; // Clear existing content
 
     // Define original dimensions for viewBox
-    const originalWidth = 600;
-    const originalHeight = 400;
+    const originalWidth = 800;
+    const originalHeight = auditors.length * 40;
     svg.setAttribute('viewBox', `0 0 ${originalWidth} ${originalHeight}`);
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet'); // Maintain aspect ratio
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
     // Get actual dimensions of SVG
     const { width: actualWidth } = svg.getBoundingClientRect();
-    const scaleFactor = actualWidth / originalWidth; // Scale based on actual width
+    const scaleFactor = actualWidth / originalWidth;
     const width = originalWidth;
     const height = originalHeight;
 
@@ -232,7 +233,7 @@ function drawAuditorsGraph(data) {
         top: 20 * scaleFactor,
         right: 30 * scaleFactor,
         bottom: 50 * scaleFactor,
-        left: 50 * scaleFactor
+        left: 30 * scaleFactor // Reduced, as names are on bars
     };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
@@ -241,15 +242,119 @@ function drawAuditorsGraph(data) {
     const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     bgRect.setAttribute('width', '100%');
     bgRect.setAttribute('height', '100%');
-    bgRect.setAttribute('fill', '#f5f5ff'); // Light gray background (modify as needed)
+    bgRect.setAttribute('fill', '#f5f5ff');
     svg.appendChild(bgRect);
 
-    // Group for graph content
+    // Group for chart content
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
     svg.appendChild(g);
 
-    // Process data: Calculate cumulative audit ratio for each transaction
-    var transactions = data.transaction;
+    // Check if auditors is empty
+    if (!auditors.length) {
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', innerWidth / 2);
+        text.setAttribute('y', innerHeight / 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', 16);
+        text.textContent = 'No auditor data available';
+        g.appendChild(text);
+        return;
+    }
 
+    // Scales
+    const maxCount = Math.max(...auditors.map(a => a.count), 1);
+    const xScale = (count) => (count / maxCount) * innerWidth;
+    const yScale = (index) => (index * innerHeight) / auditors.length;
+
+    // Draw Y-axis (empty, as names are on bars)
+    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.appendChild(yAxis);
+
+    // Draw X-axis (counts) with vertical grid lines
+    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    xAxis.setAttribute('transform', `translate(0,${innerHeight})`);
+    for (let i = 0; i <= maxCount; i += 1) { // Step of 1
+        // X-axis label
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', xScale(i));
+        text.setAttribute('y', 20 * scaleFactor);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', 12);
+        text.textContent = i;
+        xAxis.appendChild(text);
+
+        // Vertical grid line
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', xScale(i));
+        line.setAttribute('x2', xScale(i));
+        line.setAttribute('y1', 0);
+        line.setAttribute('y2', innerHeight);
+        line.setAttribute('stroke', '#e0e0e0');
+        line.setAttribute('stroke-width', 1 * scaleFactor);
+        g.appendChild(line);
+    }
+    g.appendChild(xAxis);
+
+    // Draw bars with auditor name labels
+    const barHeight = (innerHeight / auditors.length) * 0.8; // 80% of available space
+    auditors.forEach((auditor, i) => {
+        // Draw bar
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', 0);
+        rect.setAttribute('y', yScale(i) + (innerHeight / auditors.length - barHeight) / 2);
+        rect.setAttribute('width', xScale(auditor.count));
+        rect.setAttribute('height', barHeight);
+        rect.setAttribute('fill', 'steelblue');
+        g.appendChild(rect);
+
+        // Add auditor name label
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', 10 * scaleFactor); // Small offset from bar start
+        text.setAttribute('y', yScale(i) + (innerHeight / auditors.length) / 2 + 4);
+        text.setAttribute('text-anchor', 'start');
+        text.setAttribute('font-size', 11);
+        text.setAttribute('fill', 'white'); // White for visibility on steelblue
+        let label = `${auditor.firstName} ${auditor.lastName}`.trim();
+
+        // Add audits count label
+        const audits = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        audits.setAttribute('x', 10 * scaleFactor + xScale(auditor.count)); 
+        audits.setAttribute('y', yScale(i) + (innerHeight / auditors.length) / 2 + 4);
+        audits.setAttribute('text-anchor', 'start');
+        audits.setAttribute('font-size', 11);
+        audits.setAttribute('fill', 'black'); // White for visibility on steelblue
+        audits.textContent = `${auditor.count}`;
+        g.appendChild(audits);
+
+        // Truncate text to fit bar width
+        text.textContent = label;
+        g.appendChild(text); // Append to measure bbox
+        let bbox = text.getBBox();
+        const barWidth = xScale(auditor.count);
+        const maxTextWidth = barWidth - 10 * scaleFactor; // Account for padding
+
+        if (bbox.width > maxTextWidth && maxTextWidth > 20 * scaleFactor) {
+            while (bbox.width > maxTextWidth && label.length > 0) {
+                label = label.slice(0, -1);
+                text.textContent = label + '...';
+                bbox = text.getBBox();
+            }
+            if (label.length <= 3) { // If too short, reduce font size
+                text.setAttribute('font-size', 10 * scaleFactor);
+                text.textContent = `${auditor.firstName} ${auditor.lastName}`.trim();
+                bbox = text.getBBox();
+                if (bbox.width > maxTextWidth) {
+                    label = `${auditor.firstName} ${auditor.lastName}`.trim();
+                    while (bbox.width > maxTextWidth && label.length > 0) {
+                        label = label.slice(0, -1);
+                        text.textContent = label + '...';
+                        bbox = text.getBBox();
+                    }
+                }
+            }
+        }
+        // Ensure text is only appended once
+        if (!text.parentNode) g.appendChild(text);
+    });
 }

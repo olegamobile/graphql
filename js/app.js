@@ -4,20 +4,20 @@ const GRAPHQL_URL = 'https://01.gritlab.ax/api/graphql-engine/v1/graphql'
 const personalInfo = document.getElementById('personalInfo');
 const xpAmount = document.getElementById('xpAmount');
 const audits = document.getElementById('audits');
+const graph1 = document.getElementById('graph1');
+const graph2 = document.getElementById('graph2');
 
 var userData = {};
 var auditData = {};
 var auditorData = {};
+var sortedAuditorList = [];
 
 document.addEventListener('DOMContentLoaded', initialize)
 
 async function initialize() {
     if (isLogged()) {
-        hideModal('loginContainer');
-        showModal('mainContainer');
-        await fetchGraphQLData();
-        drawAuditRatioGraph(auditData);
-        updateDashboard();
+        console.log('logged')
+        renderPage();
     }
 }
 
@@ -44,7 +44,6 @@ async function fetchGraphQLData() {
     auditorData = await fetchQuery(auditorsQuery);
 
     const auditCounts = {};
-    console.log(auditorData)
     auditorData.result.forEach(result => {
         result.audits.forEach(audit => {
             const auditor = audit.auditor;
@@ -64,9 +63,7 @@ async function fetchGraphQLData() {
         });
     });
 
-    const sortedAuditorList = Object.values(auditCounts).sort((a, b) => b.count - a.count);
-    console.log(sortedAuditorList);
-
+    sortedAuditorList = Object.values(auditCounts).sort((a, b) => b.count - a.count);
 }
 
 
@@ -90,10 +87,10 @@ async function fetchQuery(query) {
         const data = await response.json();
 
         if (data.errors && data.errors[0].message.includes('Could not verify JWT')) {
-            console.log('Bad token')
             sessionStorage.removeItem('jwtToken')
             hideModal('mainContainer');
             showModal('loginContainer');
+            throw new Error('Bad token')
             return;
         }
         return data.data;

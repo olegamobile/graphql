@@ -45,12 +45,14 @@ p {
 }
 
 .login-container, .main-container {
-    max-width: 1600px;
+    max-width: 1200px;
+    min-width: 800px;
     margin: 0 auto;
     padding: 20px;
 }
 .login-container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -132,6 +134,9 @@ footer a:hover {
     text-decoration: underline;
 }
 @media (max-width: 768px) {
+    .login-container, .main-container {
+        min-width: 360px;
+    }
     .info-section {
         flex-direction: column;
     }

@@ -1,7 +1,8 @@
 function isLogged() {
     const token = sessionStorage.getItem('jwtToken');
-    console
-    if (typeof token === null) return false;
+    if (token === null) {
+        return false;
+    }
     return true;
 }
 
@@ -10,8 +11,12 @@ function handleLogout() {
     personalInfo.innerHTML = '';
     xpAmount.innerHTML = '';
     audits.innerHTML = '';
+    graph1.innerHTML = '';
+    graph2.innerHTML = '';
+
     showModal('loginContainer');
     hideModal('mainContainer');
+    document.title = 'Grit:lab user profile page';
 }
 
 
@@ -48,16 +53,22 @@ async function handleLogin() {
         sessionStorage.setItem('jwtToken', token);
         password.textContent = '';
 
-        hideModal('loginContainer');
-        showModal('mainContainer');
-
-        const data = await fetchGraphQLData();
-        updateDashboard(data)
+    renderPage();
 
     } catch (error) {
         errorMessage.textContent = 'An error occurred. Please try again.';
         errorMessage.style.display = 'block';
     }
+}
+
+async function renderPage() {
+    hideModal('loginContainer');
+    showModal('mainContainer');
+    await fetchGraphQLData();
+    document.title = `${userData.firstName} ${userData.lastName} Grit:lab profile`;
+    drawAuditRatioGraph(auditData);
+    drawAuditorsGraph(sortedAuditorList);
+    updateDashboard();
 }
 
 function hideModal(containerId) {

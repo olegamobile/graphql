@@ -4,12 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Service</title>
+    <title>Grit:lab user profile page</title>
     <link rel="stylesheet" href="assets/styles.css">
 </head>
 
 <body>
     <div class="login-container" id="loginContainer">
+        <div>
+            <h2>Login using your Grit:lab credentials</h2>
+        </div>
         <div class="login-form">
             <input type="text" id="identifier" placeholder="Gritlab login or Email" required>
             <input type="password" id="password" placeholder="Password" required>
@@ -31,12 +34,15 @@
         <div class="info-section">
             <div class="info-column" id="personalInfo">
                 <h2>User info</h2>
+                <p>Loading...</p>
             </div>
             <div class="info-column" id="xpAmount">
                 <h2>XP Amount</h2>
+                <p>Loading...</p>
             </div>
             <div class="info-column" id="audits">
                 <h2>Audits</h2>
+                <p>Loading...</p>
             </div>
         </div>
 
@@ -44,18 +50,17 @@
             <h2>Statistic Graphs</h2>
             <h3>Audit ratio</h3>
             <svg id="graph1">
-                <rect width="100%" height="100%" fill="#e0e0e0" />
-                <text x="50%" y="50%" text-anchor="middle" fill="black">Placeholder Graph 1</text>
+                <text x="50%" y="50%" text-anchor="middle">Loading...</text>
             </svg>
+            <h3>Auditors ratio (by number of audits made)</h3>
             <svg id="graph2">
-                <rect width="100%" height="100%" fill="#e0e0e0" />
-                <text x="50%" y="50%" text-anchor="middle" fill="black">Placeholder Graph 2</text>
+                <text x="50%" y="50%" text-anchor="middle">Loading...</text>
             </svg>
         </div>
     </div>
 
     <footer>
-        Created by in Apr, 2025 by <a href="https://www.linkedin.com/in/johndoe">Oleg Balandin</a>
+        Created by in Apr, 2025 by <a href="https://www.linkedin.com/in/oleg-balandin-0529065/">Oleg Balandin</a>
     </footer>
 
     <script src="js/utils.js"></script>
