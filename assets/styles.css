@@ -8,11 +8,12 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    background: linear-gradient(to bottom, #87CEEB, #1E90FF);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
+
 h2, h3 {
     padding-bottom: 16px;
 }
@@ -46,7 +47,7 @@ p {
 
 .login-container, .main-container {
     max-width: 1200px;
-    min-width: 1000px;
+    min-width: 800px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -141,3 +142,40 @@ footer a:hover {
         flex-direction: column;
     }
 }
+
+  .sea {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to top, #1E90FF, transparent);
+    overflow: hidden;
+    z-index: -100;
+  }
+  
+  .wave {
+    position: absolute;
+    bottom: 0;
+    width: 200%;
+    height: 100px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 100'%3E%3Cpath d='M0 50 Q100 20 200 50 T400 50 T600 50 T800 50 V100 H0 Z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E") repeat-x;
+    animation: wave 10s linear infinite;
+  }
+  
+  .wave:nth-child(2) {
+    bottom: -10px;
+    opacity: 0.7;
+    animation: wave 12s linear infinite reverse;
+  }
+  
+  .wave:nth-child(3) {
+    bottom: -20px;
+    opacity: 0.3;
+    animation: wave 8s linear infinite;
+  }
+  
+  @keyframes wave {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(-50%); }
+    100% { transform: translateX(0%); }
+  }

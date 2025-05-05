@@ -315,7 +315,7 @@ function drawAuditorsGraph(auditors) {
         text.setAttribute('x', 10 * scaleFactor); // Small offset from bar start
         text.setAttribute('y', yScale(i) + (innerHeight / auditors.length) / 2 + 4);
         text.setAttribute('text-anchor', 'start');
-        text.setAttribute('font-size', 11);
+        text.setAttribute('font-size', 14);
         text.setAttribute('fill', 'white'); // White for visibility on steelblue
         let label = `${auditor.firstName} ${auditor.lastName}`.trim();
 
@@ -324,7 +324,7 @@ function drawAuditorsGraph(auditors) {
         audits.setAttribute('x', 10 * scaleFactor + xScale(auditor.count));
         audits.setAttribute('y', yScale(i) + (innerHeight / auditors.length) / 2 + 4);
         audits.setAttribute('text-anchor', 'start');
-        audits.setAttribute('font-size', 11);
+        audits.setAttribute('font-size', 12);
         audits.setAttribute('fill', 'black'); // White for visibility on steelblue
         audits.textContent = `${auditor.count}`;
         g.appendChild(audits);
@@ -337,25 +337,31 @@ function drawAuditorsGraph(auditors) {
         const maxTextWidth = barWidth - 10 * scaleFactor; // Account for padding
 
         if (bbox.width > maxTextWidth && maxTextWidth > 20 * scaleFactor) {
+            const originalName = text.textContent;
             while (bbox.width > maxTextWidth && label.length > 0) {
                 label = label.slice(0, -1);
                 text.textContent = label + '...';
                 bbox = text.getBBox();
             }
-            if (label.length <= 3) { // If too short, reduce font size
-                text.setAttribute('font-size', 10 * scaleFactor);
-                text.textContent = `${auditor.firstName} ${auditor.lastName}`.trim();
-                bbox = text.getBBox();
-                if (bbox.width > maxTextWidth) {
-                    label = `${auditor.firstName} ${auditor.lastName}`.trim();
-                    while (bbox.width > maxTextWidth && label.length > 0) {
-                        label = label.slice(0, -1);
-                        text.textContent = label + '...';
-                        bbox = text.getBBox();
-                    }
-                }
-            }
+            text.addEventListener('mouseover', () => {
+                text.textContent = originalName;
+                const textBg = document.createElementNS(svgNS, 'rect');
+                textBg.setAttribute('x', text.getAttribute('x'));
+                textBg.setAttribute('y', text.getAttribute('y') - bbox.height + 2);
+                textBg.setAttribute('width', text.getBBox().width);
+                textBg.setAttribute('height', bbox.height + 4);
+                textBg.setAttribute('fill', 'steelblue');
+                g.appendChild(textBg);
+                g.appendChild(text); // Re-append text to show on top
+            });
+
+            text.addEventListener('mouseout', () => {
+                text.textContent = label + '...';
+                const textBg = g.querySelector('rect:last-of-type');
+                if (textBg) textBg.remove();
+            });
         }
+
         // Ensure text is only appended once
         if (!text.parentNode) g.appendChild(text);
     });
