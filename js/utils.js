@@ -80,9 +80,9 @@ function showModal(containerId) {
 
 function formatXP(xp) {
     if (xp >= 1_000_000) {
-        return (xp / 1_000_000).toFixed(1).replace('.', ',') + 'M';
+        return (xp / 1_000_000).toFixed(1) + 'M';
     } else if (xp >= 1_000) {
-        return (xp / 1_000).toFixed(1).replace('.', ',') + 'K';
+        return (xp / 1_000).toFixed(1) + 'K';
     } else {
         return xp.toString();
     }
