@@ -13,6 +13,8 @@ function handleLogout() {
     audits.innerHTML = '';
     graph1.innerHTML = '';
     graph2.innerHTML = '';
+    document.getElementById('identifier').innerHTML = '';
+    document.getElementById('password').innerHTML = '';
 
     showModal('loginContainer');
     hideModal('mainContainer');
